@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ToolsMagic - Image Compressor</title>
+  <style>
+    :root{
+      --blue:#007bff;
+      --blue-600:#0069e6;
+      --bg:#ffffff;
+      --muted:#6b7280;
+      --card-shadow: 0 8px 30px rgba(2,32,71,0.06);
+      --radius:12px;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(180deg,#f6fbff 0%, #ffffff 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      color:#0b1220;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .card{
+      width:100%;
+      max-width:980px;
+      border-radius:16px;
+      background:var(--bg);
+      padding:18px;
+      box-shadow:var(--card-shadow);
+    }
+
+    .head{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:52px;height:52px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-weight:700;font-size:18px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-600));
+    }
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px}
+
+    /* left panel */
+    .left{
+      padding:14px;border-radius:12px;border:1px solid #eef6ff;
+      background:linear-gradient(180deg, rgba(0,123,255,0.02), transparent);
+    }
+    .drop{
+      border:2px dashed rgba(0,123,255,0.12);
+      border-radius:10px;padding:18px;text-align:center;
+      background:rgba(3,169,244,0.02);cursor:pointer;
+    }
+    .drop.drag{border-color:var(--blue-600);background:rgba(0,123,255,0.04)}
+    .drop input{display:none}
+
+    .controls{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+    label.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    select,input[type=range],input[type=number]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6f0ff;background:white}
+
+    .preview{margin-top:12px;border-radius:10px;overflow:hidden;border:1px solid #f0f6ff;background:#fff;padding:10px;display:flex;flex-direction:column;gap:10px}
+    .preview img{max-width:100%;height:auto;display:block;border-radius:8px}
+
+    .meta{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+    .btns{display:flex;gap:8px;margin-top:8px}
+    button{cursor:pointer;border:0;padding:10px 14px;border-radius:10px;font-weight:700}
+    .btn-primary{background:var(--blue);color:white;box-shadow:0 8px 20px rgba(3,102,214,0.12)}
+    .btn-ghost{background:transparent;border:1px solid #e6f0ff;color:var(--blue)}
+
+    /* right panel */
+    .right{padding:14px;border-radius:12px;border:1px solid #eef6ff;background:#fff}
+    .right h3{margin:0 0 8px 0}
+    .sizes{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px}
+
+    .download{margin-top:12px;display:flex;gap:8px;align-items:center}
+    a.download-link{display:inline-block;padding:10px 12px;border-radius:10px;background:var(--blue);color:white;text-decoration:none;font-weight:700}
+
+    .small{font-size:13px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:880px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="head">
+      <div class="logo">TM</div>
+      <div>
+        <h1>ToolsMagic — Image Compressor</h1>
+        <p class="lead">Upload an image, choose compression, preview and download — all client-side.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="left" aria-label="Compressor controls">
+        <div class="drop" id="dropArea" tabindex="0">
+          <strong id="dropText">Click or drop an image here</strong>
+          <div class="small" style="margin-top:8px">Supported: JPG / PNG / WebP / BMP / GIF (first frame)</div>
+          <input type="file" id="fileInput" accept="image/*" />
+        </div>
+
+        <div class="controls">
+          <label class="row">
+            <span>Output format</span>
+            <select id="formatSelect" aria-label="Select format">
+              <option value="keep">Keep original</option>
+              <option value="image/jpeg">JPEG (.jpg) — best for photos</option>
+              <option value="image/webp">WebP (.webp) — great compression</option>
+              <option value="image/png">PNG (.png) — preserve transparency</option>
+            </select>
+          </label>
+
+          <label class="row">
+            <span>Quality</span>
+            <div style="width:62%">
+              <input type="range" id="qualityRange" min="10" max="100" value="85" />
+            </div>
+            <div style="width:40px;text-align:right"><span id="qualityVal">85</span>%</div>
+          </label>
+
+          <label class="row">
+            <span>Max width (px)</span>
+            <input type="number" id="maxWidth" placeholder="auto" min="1" style="width:140px" />
+          </label>
+
+          <label class="row">
+            <span>Max height (px)</span>
+            <input type="number" id="maxHeight" placeholder="auto" min="1" style="width:140px" />
+          </label>
+
+          <div style="display:flex;gap:8px">
+            <button id="processBtn" class="btn-primary">Compress</button>
+            <button id="resetBtn" class="btn-ghost">Reset</button>
+          </div>
+
+          <div class="preview" id="previewBox" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Preview</strong>
+              <div class="small" id="originalName"></div>
+            </div>
+            <img id="previewImg" alt="Preview image" src="" />
+            <div class="meta">
+              <div id="origSize">—</div>
+              <div id="origDim">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right" aria-label="Output & download">
+        <h3>Result</h3>
+        <div class="small">Compression happens on your device — no file uploads.</div>
+
+        <div class="sizes" style="margin-top:12px">
+          <div>
+            <div class="small">Original</div>
+            <div id="sizeBefore">—</div>
+          </div>
+          <div>
+            <div class="small">Compressed</div>
+            <div id="sizeAfter">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <canvas id="resultCanvas" style="width:100%;border-radius:8px;display:none"></canvas>
+        </div>
+
+        <div class="download">
+          <a id="downloadLink" class="download-link" href="#" download>Download</a>
+          <button id="openBtn" class="btn-ghost">Open</button
